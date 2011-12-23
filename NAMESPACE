@@ -1,0 +1,2 @@
+useDynLib(brnn)
+export(brnn,brnn.extended,predictions.nn,normalize,initnw,estimate.trace)
