@@ -1,3 +1,21 @@
+/*  brnn/src/unix/util_unix.c by Paulino Perez Rodriguez
+ *
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 or 3 of the License
+ *  (at your option).
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  A copy of the GNU General Public License is available at
+ *  http://www.r-project.org/Licenses/
+ */
+
+
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
@@ -6,8 +24,8 @@
 
 #ifdef SUPPORT_OPENMP
   #include <omp.h>
-  #define CSTACK_DEFNS 7
-  #include "Rinterface.h"
+  //#define CSTACK_DEFNS 7
+  //#include "Rinterface.h"
 #endif
 
 SEXP predictions_nn(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP yhat, SEXP reqCores)
@@ -39,7 +57,7 @@ SEXP predictions_nn(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP yhat, 
    */
    
    #ifdef SUPPORT_OPENMP     
-     R_CStackLimit=(uintptr_t)-1;
+     //R_CStackLimit=(uintptr_t)-1;
      useCores=INTEGER_VALUE(reqCores);
      haveCores=omp_get_num_procs();
      if(useCores<=0 || useCores>haveCores) useCores=haveCores;
@@ -105,7 +123,7 @@ SEXP jacobian(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP J, SEXP reqC
    */
 
    #ifdef SUPPORT_OPENMP
-     R_CStackLimit=(uintptr_t)-1;
+     //R_CStackLimit=(uintptr_t)-1;
      useCores=INTEGER_VALUE(reqCores);
      haveCores=omp_get_num_procs();
      if(useCores<=0 || useCores>haveCores) useCores=haveCores;
@@ -195,7 +213,7 @@ SEXP estimate_trace(SEXP A, SEXP n, SEXP lambdamin, SEXP lambdamax, SEXP tol, SE
    */
    
    #ifdef SUPPORT_OPENMP
-     R_CStackLimit=(uintptr_t)-1;
+     //R_CStackLimit=(uintptr_t)-1;
      haveCores=omp_get_num_procs();
      if(useCores<=0 || useCores>haveCores) useCores=haveCores;
      omp_set_num_threads(useCores);

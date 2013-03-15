@@ -1,2 +1,17 @@
 useDynLib(brnn)
-export(brnn,brnn.extended,predictions.nn,normalize,initnw,estimate.trace)
+export(brnn,brnn_extended,normalize, un_normalize, initnw, estimate.trace, 
+       print.brnn,summary.brnn, predict.brnn, coef.brnn, 
+       print.brnn_extended,summary.brnn_extended,predict.brnn_extended,coef.brnn_extended)
+
+S3method(print, brnn)
+S3method(print, brnn_extended)
+S3method(summary, brnn)
+S3method(summary, brnn_extended)
+S3method(predict, brnn)
+S3method(predict, brnn_extended)
+S3method(coef, brnn)
+S3method(coef, brnn_extended)
+S3method(brnn, default)
+S3method(brnn, formula)
+S3method(brnn_extended,default)
+S3method(brnn_extended,formula)

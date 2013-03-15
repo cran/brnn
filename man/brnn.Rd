@@ -1,5 +1,11 @@
 \name{brnn}
 \alias{brnn}
+\alias{brnn.formula}
+\alias{brnn.default}
+\alias{coef.brnn}
+\alias{print.brnn}
+\alias{summary.brnn}
+
 \title{brnn}
 \description{
   The brnn function
@@ -8,15 +14,21 @@
   perform the optimization. This function implements the functionality of the function trainbr in Matlab 2010b.
 }
 \usage{
-  brnn(y,X,neurons,epochs=1000,mu=0.005,mu_dec=0.1, 
-                   mu_inc=10,mu_max=1e10,min_grad=1e-10,change = 0.001,cores=1,
-                   verbose=TRUE,
-                   Monte_Carlo = FALSE,tol = 1e-06, samples = 40)
+  brnn(x, \dots)
+  
+  \method{brnn}{formula}(formula, data, contrasts=NULL,\dots)
+
+  \method{brnn}{default}(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0.1, 
+       mu_inc=10,mu_max=1e10,min_grad=1e-10,change = 0.001,cores=1,
+       verbose=FALSE,Monte_Carlo = FALSE,tol = 1e-06, samples = 40,\dots)
 }
 \arguments{
+  \item{formula}{A formula of the form \code{y ~ x1 + x2 + \dots}}
+  \item{data}{Data frame from which variables specified in  \code{formula} are preferentially to be taken.}
+  \item{x}{(numeric, \eqn{n \times p}{n x p}) incidence matrix.}
   \item{y}{(numeric, \eqn{n}{n}) the response data-vector (NAs not  allowed).}
-  \item{X}{(numeric, \eqn{n \times p}{n x p}) incidence matrix.}
   \item{neurons}{positive integer that indicates the number of neurons.}
+  \item{normalize}{logical, if TRUE will normalize inputs and output, the default value is TRUE.}
   \item{epochs}{positive integer, maximum number of epochs(iterations) to train, default 1000.}
   \item{mu}{positive number that controls the behaviour of the Gauss-Newton optimization algorithm, default value 0.005.}
   \item{mu_dec}{positive number, is the mu decrease ratio, default value 0.1.}
@@ -24,12 +36,17 @@
   \item{mu_max}{maximum mu before training is stopped, strict positive number, default value \eqn{1\times 10^{10}}{1e10}.}
   \item{min_grad}{minimum gradient.}
   \item{change}{The program  will stop if the maximum (in absolute value) of the differences of the F function in 3 consecutive iterations is less than this quantity.}
-  \item{cores}{Number of cpu cores to use for calculations (only available in UNIX-like operating systems).}
+  \item{cores}{Number of cpu cores to use for calculations (only available in UNIX-like operating systems). The function detectCores in the R package 
+               parallel can be used to attempt to detect the number of CPUs in the machine that R is running, but not necessarily 
+               all the cores are available for the current user, because for example in multi-user 
+               systems it will depend on system policies. Further details can be found in the documentation for the parallel package.}
   \item{verbose}{logical, if TRUE will print iteration history.}
   \item{Monte_Carlo}{If TRUE it will estimate the trace of the inverse of the hessian using Monte Carlo procedures, see Bai et al. (1996) for 
                      more details. This routine calls the function estimate.trace() to perform the computations.}
   \item{tol}{numeric tolerance, a tiny number useful for checking convergenge in the Bai's algorithm. }
   \item{samples}{positive integer, number of Monte Carlo replicates to estimate the trace of the inverse, see Bai et al. (1996) for more details.}
+  \item{contrasts}{an optional list of contrasts to be used for some or all of the factors appearing as variables in the model formula.}
+  \item{\dots}{arguments passed to or from other methods.}
 }
 
 \details{
@@ -46,7 +63,7 @@
     \item{\eqn{w_k}{w_k} is the weight of the \eqn{k}{k}-th neuron, \eqn{k=1,...,s}{k=1,...,s}.}
     \item{\eqn{b_k}{b_k} is a bias for the \eqn{k}{k}-th neuron, \eqn{k=1,...,s}{k=1,...,s}.}
     \item{\eqn{\beta_j^{[k]}}{beta_j^{[s]}} is the weight of the \eqn{j}{j}-th input to the net, \eqn{j=1,...,p}{j=1,...,p}.}
-    \item{\eqn{g_k(\cdot)}{g_k(.)} is the activation function, in this implementation \eqn{g_k(x)=\frac{\exp(x)-\exp(-x)}{\exp(x)+\exp(-x)}}{g_k(x)=(exp(x)-exp(-x))/(exp(x)+exp(-x))}.}
+    \item{\eqn{g_k(\cdot)}{g_k(.)} is the activation function, in this implementation \eqn{g_k(x)=\frac{\exp(2x)-1}{\exp(2x)+1}}{g_k(x)=(exp(2x)-1)/(exp(2x)+1)}.}
    }  
 
    The software will minimize 
@@ -63,12 +80,14 @@
   
 }
 \value{
-A list containing: 
+
+object of class \code{"brnn"} or \code{"brnn.formula"}. Mostly internal structure, but it is a list containing:
+
 \item{$theta}{A list containing weights and biases. The first \eqn{s}{s} components of the list contains vectors with the estimated parameters for
               the \eqn{k}{k}-th neuron, i.e. \eqn{(w_k, b_k, \beta_1^{[k]},...,\beta_p^{[k]})'}.}
 \item{$message}{String that indicates the stopping criteria for the training process.}
-\item{$alpha}{alpha parameter.}
-\item{$beta}{beta parameter.}
+\item{$alpha}{\eqn{\alpha}{alpha} parameter.}
+\item{$beta}{\eqn{\beta}{beta} parameter.}
 \item{$gamma}{effective number of parameters.}
 \item{$Ew}{The sum of the squares of the bias and weights.}
 \item{$Ed}{The sum of the squares between observed and predicted values.}
@@ -96,6 +115,11 @@ in Neural Information Processing Systems 16}. MIT Press, Cambridge, MA.
 
 }
 
+\seealso{
+	\code{\link{predict.brnn}}
+}
+
+
 \examples{
 
 \dontrun{
@@ -107,8 +131,6 @@ library(brnn)
 #Example 1 
 #Noise triangle wave function, similar to example 1 in Foresee and Hagan (1997)
 
-cores=2
-
 #Generating the data
 x1=seq(0,0.23,length.out=25)
 y1=4*x1+rnorm(25,sd=0.1)
@@ -118,119 +140,99 @@ x3=seq(0.77,1,length.out=25)
 y3=4*x3-4+rnorm(25,sd=0.1)
 x=c(x1,x2,x3)
 y=c(y1,y2,y3)
-X=as.matrix(x)
 
-neurons=2
-out=brnn(y,X,neurons=neurons,cores=cores)
-cat("Message: ",out$reason,"\n")
 
-#We fitted a 1-2-1 Bayesian regularized neural net by using the 
-#trainbr function in Matlab 2010b and the results for the weights and biases are as follows. 
-theta_true=list()
-theta_true[[1]]=c(11.11,-0.61,1.08)
-theta_true[[2]]=c(6.0942,1.46,-2.85)
-theta_true[[3]]=0.63
+#With the formula interface
+out=brnn(y~x,neurons=2)
 
-yhat_Matlab=theta_true[[3]]+predictions.nn(X,theta_true,2)
+#With the default S3 method the call is
+#out=brnn(y=y,x=as.matrix(x),neurons=2)
 
-#Compare the results obtained with the brnn function in R and trainbr in Matlab,
-plot(x,y,xlim=c(0,1),ylim=c(-1.5,1.5),main="Bayesian Regularization for ANN 1-2-1")
-lines(x,yhat_Matlab,col="red")
-yhat_R=predictions.nn(X,out$theta,neurons)
-lines(x,yhat_R,col="blue",lty=2)
-legend("topright",legend=c("Matlab","R"),col=c("red","blue"),lty=c(1,2),bty="n")
- 
+plot(x,y,xlim=c(0,1),ylim=c(-1.5,1.5),
+     main="Bayesian Regularization for ANN 1-2-1")
+lines(x,predict(out),col="blue",lty=2)
+legend("topright",legend="Fitted model",col="blue",lty=2,bty="n")
+
 ###############################################################
 #Example 2
 #sin wave function, example in the Matlab 2010b demo.
 
-cores=2
-
 x = seq(-1,0.5,length.out=100)
 y = sin(2*pi*x)+rnorm(length(x),sd=0.1)
-X=as.matrix(x)
-neurons=3
-out=brnn(y,X,neurons=neurons,cores=cores)
-cat("Message: ",out$reason,"\n")
+
+#With the formula interface
+out=brnn(y~x,neurons=3)
+
+#With the default method the call is
+#out=brnn(y=y,x=as.matrix(x),neurons=3)
+
 plot(x,y)
-yhat_R=predictions.nn(X,out$theta,neurons)
-lines(x,yhat_R,col="blue",lty=2)
+lines(x,predict(out),col="blue",lty=2)
 
+legend("bottomright",legend="Fitted model",col="blue",lty=2,bty="n")
 
-#################################################################
+###############################################################
 #Example 3
-
 #2 Inputs and 1 output
 #the data used in Paciorek and
 #Schervish (2004). The data is from a two input one output function with Gaussian noise
-#with mean zero and standard deviation 0.25.
-
-cores=2
+#with mean zero and standard deviation 0.25
 
 data(twoinput)
-X=normalize(as.matrix(twoinput[,1:2]))
-y=as.vector(twoinput[,3])
 
-neurons=10
-out=brnn(y,X,neurons=neurons,cores=cores)
-cat("Message: ",out$reason,"\n")
-   
-f=function(x1,x2,theta,neurons) predictions.nn(X=cbind(x1,x2),theta,neurons)
-x1=seq(min(X[,1]),max(X[,1]),length.out=50)
-x2=seq(min(X[,1]),max(X[,1]),length.out=50)
-z=outer(x1,x2,f,theta=out$theta,neurons=neurons) # calculating the density values
-   
-transformation_matrix=persp(x1, x2, z, 
-                            main="Fitted model", 
+#Formula interface
+out=brnn(y~x1+x2,data=twoinput,neurons=10)
+
+#With the default S3 method
+#out=brnn(y=as.vector(twoinput$y),x=as.matrix(cbind(twoinput$x1,twoinput$x2)),neurons=10)
+
+f=function(x1,x2) predict(out,cbind(x1,x2))
+x1=seq(min(twoinput$x1),max(twoinput$x1),length.out=50)
+x2=seq(min(twoinput$x2),max(twoinput$x2),length.out=50)
+z=outer(x1,x2,f) # calculating the density values
+
+transformation_matrix=persp(x1, x2, z,
+                            main="Fitted model",
                             sub=expression(y==italic(g)~(bold(x))+e),
-                            col="lightgreen",theta=30, phi=20,r=50, d=0.1,expand=0.5,ltheta=90, lphi=180, 
-                            shade=0.75, ticktype="detailed",nticks=5) 
-points(trans3d(X[,1],X[,2], f(X[,1],X[,2],
-       theta=out$theta,neurons=neurons), transformation_matrix), col = "red")
+                            col="lightgreen",theta=30, phi=20,r=50, 
+                            d=0.1,expand=0.5,ltheta=90, lphi=180,
+                            shade=0.75, ticktype="detailed",nticks=5)
+points(trans3d(twoinput$x1,twoinput$x2, f(twoinput$x1,twoinput$x2), 
+               transformation_matrix), col = "red")
 
 ###############################################################
 #Example 4
 #Gianola et al. (2011).
-#Warning, it will take a while, substitute the FALSE
-#statement with the TRUE statement if you really want to run the example
+#Warning, it will take a while
 
-cores=4
-  
 #Load the Jersey dataset
 data(Jersey)
-  
-#Normalize inputs
-y=normalize(pheno$yield_devMilk)
-X=normalize(G)
 
 #Fit the model with the FULL DATA
-out=brnn(y=y,X=X,neurons=2,cores=cores)
-cat("Message: ",out$reason,"\n")
+#Formula interface
+out=brnn(pheno$yield_devMilk~G,neurons=2,verbose=TRUE)
 
-#Obtain predictions
-yhat_R=predictions.nn(X,out$theta,neurons=2)
-plot(y,yhat_R)
+#Obtain predictions and plot them against fitted values
+plot(pheno$yield_devMilk,predict(out))
 
 #Predictive power of the model using the SECOND set for 10 fold CROSS-VALIDATION
-index=partitions==2
-Xtraining=X[!index,]
-ytraining=y[!index]
-Xtesting=X[index,]
-ytesting=y[index]
+data=pheno
+data$X=G
+data$partitions=partitions
 
 #Fit the model for the TESTING DATA
-out=brnn(y=ytraining,X=Xtraining,neurons=4)
-cat("Message: ",out$reason,"\n")
+out=brnn(yield_devMilk~X,
+         data=subset(data,partitions!=2),neurons=2,verbose=TRUE)
 
 #Plot the results
 #Predicted vs observed values for the training set
 par(mfrow=c(2,1))
-yhat_R_training=predictions.nn(Xtraining,out$theta,neurons=4)
-plot(ytraining,yhat_R_training,xlab=expression(hat(y)),ylab="y")
-cor(ytraining,yhat_R_training)
-  
+plot(out$y,predict(out),xlab=expression(hat(y)),ylab="y")
+cor(out$y,predict(out))
+
 #Predicted vs observed values for the testing set
-yhat_R_testing=predictions.nn(Xtesting,out$theta,neurons=4)
+yhat_R_testing=predict(out,newdata=subset(data,partitions==2))
+ytesting=pheno$yield_devMilk[partitions==2]
 plot(ytesting,yhat_R_testing,xlab=expression(hat(y)),ylab="y")
 cor(ytesting,yhat_R_testing)
 
@@ -239,3 +241,4 @@ cor(ytesting,yhat_R_testing)
 }
 
 \keyword{models}
+
