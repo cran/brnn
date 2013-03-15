@@ -1,14 +1,15 @@
 Package: brnn
-Version: 0.1
-Date: 2011-12-23
-Title: brnn
+Version: 0.3
+Date: 2013-03-15
+Title: brnn (Bayesian regularization for feed-forward neural networks)
 Author: Paulino Perez Rodriguez, Daniel Gianola
 Maintainer: Paulino Perez Rodriguez <perpdgo@colpos.mx>
-Depends: R (>= 2.13.2)
-Description: Bayesian regularization for feedforward neural networks
+Depends: R (>= 2.13.2), Formula
+Description: Bayesian regularization for feed-forward neural networks
 LazyLoad: true
 License: GPL-2
 URL: http://www.r-project.org/
-Packaged: 2012-12-05 23:27:16 UTC; paulino
+Packaged: 2013-03-15 11:51:53 UTC; paulino
 Repository: CRAN
-Date/Publication: 2012-12-06 16:10:34
+Date/Publication: 2013-03-15 13:28:44
+NeedsCompilation: yes

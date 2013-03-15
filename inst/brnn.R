@@ -37,13 +37,13 @@ normalize=function(x,base,spread)
 
 #Go back to the original scale
 #x=base+0.5*spread*(z+1)
-un_normalize=function(z,base,spread)
+un_normalize=function(x,base,spread)
 {
-	if(is.matrix(z))
+	if(is.matrix(x))
 	{
-		return(sweep(sweep(z+1,2,0.5*spread,"*"),2,base,"+"))
+		return(sweep(sweep(x+1,2,0.5*spread,"*"),2,base,"+"))
 	}else{
-		return(base+0.5*spread*(z+1))
+		return(base+0.5*spread*(x+1))		
 	}	
 }
 
@@ -179,94 +179,6 @@ estimate.trace=function(A,tol=1E-6,samples=40,cores=1)
     ans
 }
 
-brnn=function(x,...) UseMethod("brnn")
-brnn_extended=function(x,...) UseMethod("brnn_extended")
-
-
-#Pretty simple formula interface for brnn
-#Code adapted from nnet R package
-brnn.formula=function(formula,data,contrasts=NULL,...)
-{
-    m=match.call(expand.dots = FALSE)
-    if(is.matrix(eval.parent(m$data))) m$data=as.data.frame(data)
-    m$... = m$contrasts = NULL
-    m[[1L]] = as.name("model.frame")
-    m = eval.parent(m)
-    Terms = attr(m, "terms")
-    x =model.matrix(Terms, m, contrasts)
-    cons = attr(x, "contrast")
-    xint = match("(Intercept)", colnames(x), nomatch=0L)
-    if(xint > 0L) x = x[, -xint, drop=FALSE] 
-
-    y = model.response(m)
-	
-    out=brnn.default(x,y,...)
-
-    out$terms = Terms
-    out$coefnames = colnames(x)
-    out$call = match.call()
-    #res$na.action = attr(m, "na.action")
-    out$contrasts = cons
-    out$xlevels = .getXlevels(Terms, m)
-
-    class(out)=c("brnn.formula","brnn")
-
-    return(out)	
-}
-
-#Pretty simple formula interface for brnn_extended
-#Code adapted from Formula and betareg packages
-brnn_extended.formula=function(formula,data,contrastsx=NULL,contrastsz=NULL,...)
-{
-        if(missing(data)) data = environment(formula)
-  	mf = match.call(expand.dots = FALSE)
-  	m = match(c("formula", "data"), names(mf), 0L)
-  	mf = mf[c(1L, m)]
-  	mf$drop.unused.levels = TRUE
-
-  	## formula
-  	formula = as.Formula(formula)
-	if(length(formula)[1L]>1L) stop("Multiresponse not allowed in this model\n");
-	if(length(formula)[2L]!=2L) stop("Two groups of predictors should be separated by | ");
-  	
-  	mf$formula = formula
-
-  	## evaluate model.frame
-  	mf[[1L]] = as.name("model.frame")
-  	mf = eval(mf, parent.frame())
-
-  	## extract terms, model matrix, response
-  	mt = terms(formula, data = data)
-  	mtx = terms(formula, data = data, rhs = 1L)
-  	mtz = delete.response(terms(formula, data = data, rhs = 2L))
-  	y = model.response(mf, "numeric")
-  	x = model.matrix(mtx, mf,contrastsx)
-        consx = attr(x, "contrast")
-  	z = model.matrix(mtz, mf,contrastsz)
-        consz = attr(z, "contrast")
-  	
-  	xint = match("(Intercept)", colnames(x), nomatch=0L)
-    	if(xint > 0L) x = x[, -xint, drop=FALSE] # Drop intecept
-    
-    	zint = match("(Intercept)", colnames(z), nomatch=0L)
-    	if(zint > 0L) z = z[, -zint, drop=FALSE] # Drop intecept
-  
-    	out=brnn_extended.default(x,y,z,...)
-    	out$call=match.call()
-	
-	out$mtx=mtx
-	out$mtz=mtz
-        out$contrastsx=consx
-        out$contrastsz=consz
-	out$xlevels = .getXlevels(mtx, mf)
-        out$zlevels = .getXlevels(mtz, mf)
-	out$call=match.call()
-
-	class(out)=c("brnn_extended.formula","brnn_extended")
-
-    	return(out)
-}
-
 #Function to do Bayesian Regularization for a network with a single layer and S neurons
 #normalize, logical if TRUE will rescale inputs and output in the interval [-1,1]
 #mu, strict pos scalar, default value 0.005
@@ -280,21 +192,21 @@ brnn_extended.formula=function(formula,data,contrastsx=NULL,contrastsz=NULL,...)
 #tol, tolerance, argument for estimate.trace
 #samples number of Monte Carlo reps used for Monte Carlo estimates, argument for estimate.trace
 
-brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0.1, mu_inc=10,mu_max=1e10,
-              min_grad=1e-10,change=0.001,cores=1,verbose=FALSE,
-              Monte_Carlo=FALSE,tol=1E-6,samples=40,...)
+brnn=function(y,X,neurons,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0.1, mu_inc=10,mu_max=1e10,
+              min_grad=1e-10,change=0.001,cores=1,verbose=TRUE,
+              Monte_Carlo=FALSE,tol=1E-6,samples=40)
 {
    reason="UNKNOWN";
 
    #Checking that the imputs are ok
    if(!is.vector(y)) stop("y must be a vector\n")
-   if(!is.matrix(x)) stop("x must be a matrix\n")
+   if(!is.matrix(X)) stop("X must be a matrix\n")
    
    if(normalize)
    {
-        x_base=apply(x,2,min)
-        x_spread=apply(x,2,max)-x_base 
-        x_normalized=normalize(x,base=x_base,spread=x_spread)
+        X_base=apply(X,2,min)
+        X_spread=apply(X,2,max)-X_base 
+        X_normalized=normalize(X,base=X_base,spread=X_spread)
    		
    		y_base=min(y)
    		y_spread=max(y) - y_base
@@ -305,15 +217,15 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
    		y_base=NULL
    		y_spread=NULL
    		
-   		x_normalized=x
-   		x_base=NULL
-   		x_spread=NULL
+   		X_normalized=X
+   		X_base=NULL
+   		X_spread=NULL
    }
    
-   vecx=as.vector(x_normalized)
+   vecX=as.vector(X_normalized)
    
    #Initializing parameters for the net
-   p=ncol(x_normalized)
+   p=ncol(X_normalized)
    n=length(y_normalized)
    
    #neurons is the number of neurons
@@ -327,7 +239,7 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
  
    gamma=npar
    
-   e=y_normalized-predictions.nn.C(vecx,n,p,theta,neurons,cores)
+   e=y_normalized-predictions.nn.C(vecX,n,p,theta,neurons,cores)
 
    Ed=sum(e^2)
    beta=(n - gamma)/(2*Ed); if(beta<0) beta=1;
@@ -352,11 +264,11 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
 		cat("Epoch=",epoch,"\n")
       }
       
-      J=jacobian(vecx,n,p,npar,theta,neurons,cores)
+      J=jacobian(vecX,n,p,npar,theta,neurons,cores)
       
       H=crossprod(J)
       
-      e=y_normalized-predictions.nn.C(vecx,n,p,theta,neurons,cores)
+      e=y_normalized-predictions.nn.C(vecX,n,p,theta,neurons,cores)
 
       #g=2*beta*t(J)%*%e+2*alpha*unlist(theta)
       g=2*as.vector((beta*t(e)%*%J+alpha*unlist(theta)))  #is it faster?
@@ -389,29 +301,29 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
 	  	theta_new=list()
 	  	for(i in 1:neurons)
 	  	{
-	      		theta_new[[i]]=tmp[1:(2+p)]
-	      		tmp=tmp[-c(1:(2+p))]
+	      theta_new[[i]]=tmp[1:(2+p)]
+	      tmp=tmp[-c(1:(2+p))]
 	  	}
 	  
-      		e_new=y_normalized-predictions.nn.C(vecx,n,p,theta_new,neurons,cores)
+      	e_new=y_normalized-predictions.nn.C(vecX,n,p,theta_new,neurons,cores)
 	  	Ed=sum(e_new^2)
 	  	Ew=Ew(theta_new)
 	  	C_new=beta*Ed+alpha*Ew
 	  	if(verbose) 
 	  	{
-	    		cat("C_new=",C_new,"\tEd=",Ed,"\tEw=",Ew,"\n")
+	    	cat("C_new=",C_new,"\tEd=",Ed,"\tEw=",Ew,"\n")
 	  	}
 	  	if(C_new<C)
 	  	{
-	    		mu=mu*mu_dec
-            		if (mu < 1e-20) mu = 1e-20;
-	    		flag_C=FALSE
+	    	mu=mu*mu_dec
+            if (mu < 1e-20) mu = 1e-20;
+	    	flag_C=FALSE
 	  	}else{
-	    		mu=mu*mu_inc
+	    	mu=mu*mu_inc
 	  	}
 	  	if(verbose)
 	  	{
-	    		cat("mu=",mu,"\n")
+	    	cat("mu=",mu,"\n")
 	  	}
           flag_mu=mu<=mu_max
       }
@@ -446,69 +358,35 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
 
    #answer
    out=list(theta=theta,alpha=alpha,beta=beta,gamma=gamma,Ed=Ed,Ew=Ew,F_history=F_history,reason=reason,epoch=epoch, 
-            neurons=neurons,p=p,n=n,npar=npar,x_normalized=x_normalized,x_base=x_base,x_spread=x_spread,
-            y_base=y_base,y_spread=y_spread,y=y,
+            neurons=neurons,p=p,n=n,npar=npar,X_normalized=X_normalized,X_base=X_base,X_spread=X_spread,y_base=y_base,y_spread=y_spread,
             normalize=normalize)
-   out$call=match.call()
    class(out)="brnn";
    
    #return the goodies
    return(out)
 }
 
-brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0.1, mu_inc=10,mu_max=1e10,
-                       min_grad=1e-10,change=0.001,cores=1,verbose=FALSE,...)
+brnn.extended=function(y,X1,X2,neurons1,neurons2,epochs=1000,mu=0.005,mu_dec=0.1, mu_inc=10,mu_max=1e10,
+                       min_grad=1e-10,change=0.001,cores=1,verbose=FALSE)
 {
    reason="UNKNOWN";
 
    #Checking that the imputs are ok
    if(!is.vector(y)) stop("y must be a vector\n")
-   if(!is.matrix(x)) stop("x must be a matrix\n") 
-   if(!is.matrix(z)) stop("z must be a matrix\n")
-   
-   
-   if(normalize)
-   {
-        x_base=apply(x,2,min)
-        x_spread=apply(x,2,max)-x_base 
-        x_normalized=normalize(x,base=x_base,spread=x_spread)
-        
-        z_base=apply(z,2,min)
-        z_spread=apply(z,2,max)-z_base 
-        z_normalized=normalize(z,base=z_base,spread=z_spread)
-   		
-   	y_base=min(y)
-   	y_spread=max(y) - y_base
-   	y_normalized=normalize(y,base=y_base,spread=y_spread)
-   		
-   }else{
-
-   	y_normalized=y
-   	y_base=NULL
-   	y_spread=NULL
-   		
-   	x_normalized=x
-   	x_base=NULL
-   	x_spread=NULL
-   		
-   	z_normalized=z
-   	z_base=NULL
-   	z_spread=NULL
-   }
-   
-   
-   vecx=as.vector(x_normalized)
-   vecz=as.vector(z_normalized)
+   if(!is.matrix(X1)) stop("X1 must be a matrix\n") 
+   if(!is.matrix(X2)) stop("X2 must be a matrix\n")
+   vecX1=as.vector(X1)
+   vecX2=as.vector(X2)
    
    #Initializing parameters for the net
-   p=ncol(x_normalized)
-   q=ncol(z_normalized)
-   n=length(y_normalized)
+   p=ncol(X1)
+   q=ncol(X2)
+   n=length(y)
    
    #neurons is the number of neurons
    #the first 1 corresponds to the weight for the tansig function, i.e. weight*tansig(.)
    #the second 1 corresponds to the bias in tansig(.) function, .= bias + xi[1]*beta[1]+...+xi[p]*beta[p]
-   #p and q corresponds to the number of covariates
+   #p corresponds to the number of covariates
 
    npar1=neurons1*(1+1+p)
    npar2=neurons2*(1+1+q)
@@ -529,7 +407,11 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
    alpha=0.01
    delta=0.01
    beta=1
-   
+   alpha_c=0.01
+   delta_c=0.01
+   w1=0.1
+   w2=0.1
+  
    epoch=1
    flag_gradient=TRUE
    flag_mu=TRUE
@@ -543,37 +425,37 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
    {
       if(verbose)
       {
-		cat("----------------------------------------------------------------------\n")
-		cat("Epoch=",epoch,"\n")
+	cat("----------------------------------------------------------------------\n")
+	cat("Epoch=",epoch,"\n")
       }
      
       #Parallel version  
-      J1=jacobian(vecx,n,p,npar1,theta1,neurons1,cores)
-      J2=jacobian(vecz,n,q,npar2,theta2,neurons2,cores)
-      J=cbind(J1,J2)
+      J1=jacobian(vecX1,n,p,npar1,theta1,neurons1,cores)
+      J2=jacobian(vecX2,n,q,npar2,theta2,neurons2,cores)
+      p1=predictions.nn.C(vecX1,n,p,theta1,neurons1,cores)
+      p2=predictions.nn.C(vecX2,n,q,theta2,neurons2,cores)
+      J=cbind(J1,J2,-p1,-p2)
 
     
       H=crossprod(J)
-      
-      p1=predictions.nn.C(vecx,n,p,theta1,neurons1,cores)
-      p2=predictions.nn.C(vecz,n,q,theta2,neurons2,cores)
 
-      e=y_normalized-p1-p2
+      e=y-w1*p1-w2*p2
       
-      #g=2*beta*t(J)%*%e+2*c(alpha*unlist(theta1),delta*(unlist(theta2)))
-      g=2*as.vector((beta*t(e)%*%J+c(alpha*unlist(theta1),delta*(unlist(theta2))))) #is it faster?
+      #g=2*beta*t(J)%*%e+2*c(alpha*unlist(theta1),delta*(unlist(theta2)),c(alpha_c*w1,delta_c*w2))
+      g=2*as.vector((beta*t(e)%*%J+c(alpha*unlist(theta1),delta*(unlist(theta2)),c(alpha_c*w1,delta_c*w2))))  #is it faster?
       
       mg=max(abs(g))
       flag_gradient=mg>min_grad
       Ed=sum(e^2)
       E1=Ew(theta1)
       E2=Ew(theta2)
-      
-      C=beta*Ed+alpha*E1+delta*E2
+      E3=w1^2
+      E4=w2^2
+      C=beta*Ed+alpha*E1+delta*E2+alpha_c*E3+delta_c*E4
       if(verbose)
       {
-		cat("C=",C,"\tEd=",Ed,"\tE1=",E1,"\tE2=",E2,"\n")
-		cat("gradient=",mg,"\n")
+	cat("C=",C,"\tEd=",Ed,"\tE1=",E1,"\tE2=",E2,"\tE3=",E3,"\tE4=",E4,"\n")
+	cat("gradient=",mg,"\n")
       }
 
       F_history[epoch]=C_new
@@ -583,7 +465,7 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
           if(max(abs(diff(F_history[(epoch-3):epoch])))<change) 
           {
               flag_change_F=FALSE;
-              reason=paste("Changes in F=beta*SCE + alpha * Ea + delta *Ed in last 3 iterations less than",change,sep=" ");
+              reason=paste("Changes in F=beta*SCE + alpha * Ea + delta *Ed +alpha_c*c_a^2 + delta_c*c_d^2 in last 3 iterations less than",change,sep=" ");
           }
       }
       
@@ -591,15 +473,14 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
       flag_mu=mu<=mu_max
       while(flag_C & flag_mu)
       {
-          Q=diag(c(rep(2*alpha+mu,npar1),rep(2*delta+mu,npar2)))
-	  tmp=as.vector(c(unlist(theta1),unlist(theta2))-solve(2*beta*H+Q,g))
+          Q=diag(c(rep(2*alpha+mu,npar1),rep(2*delta+mu,npar2),c(2*alpha_c+mu,2*delta_c+mu)))
+	  tmp=as.vector(c(unlist(theta1),unlist(theta2),c(w1,w2))-solve(2*beta*H+Q,g))
 
 	  theta_new1=list()
-
 	  for(i in 1:neurons1)
 	  {
-		theta_new1[[i]]=tmp[1:(2+p)]
-	      	tmp=tmp[-c(1:(2+p))]
+	      theta_new1[[i]]=tmp[1:(2+p)]
+	      tmp=tmp[-c(1:(2+p))]
 	  }
 
           theta_new2=list()
@@ -607,24 +488,27 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
           {
               theta_new2[[i]]=tmp[1:(2+p)]
 	      tmp=tmp[-c(1:(2+p))]
-          }  
-          
+          }
+          w1_new=tmp[1]
+          w2_new=tmp[2]	  
           
           #Paralell version
-          p1_new=predictions.nn.C(vecx,n,p,theta_new1,neurons1,cores)
-          p2_new=predictions.nn.C(vecz,n,q,theta_new2,neurons2,cores)
+          p1_new=predictions.nn.C(vecX1,n,p,theta_new1,neurons1,cores)
+          p2_new=predictions.nn.C(vecX2,n,q,theta_new2,neurons2,cores)
       
-          e_new=y_normalized-p1_new-p2_new
+          e_new=y-w1_new*p1_new-w2_new*p2_new
 
 	  Ed=sum(e_new^2)
 	  E1=Ew(theta_new1)
           E2=Ew(theta_new2)
+          E3=w1_new^2
+          E4=w2_new^2
 
-	  C_new=beta*Ed+alpha*E1+delta*E2
+	  C_new=beta*Ed+alpha*E1+delta*E2+alpha_c*E3+delta_c*E4
 
 	  if(verbose)
 	  {
-		cat("C_new=",C_new,"\tEd=",Ed,"\tE1=",E1,"\tE2=",E2,"\n")
+	    cat("C_new=",C_new,"\tEd=",Ed,"\tE1=",E1,"\tE2=",E2,"\tE3=",E3,"\tE4=",E4,"\n")
 	  }
 	  if(C_new<C)
 	  {
@@ -644,17 +528,22 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
      
       theta1=theta_new1
       theta2=theta_new2
-      
+      w1=w1_new
+      w2=w2_new
       epoch=epoch+1
-      Q1=diag(c(rep(2*alpha,npar1),rep(2*delta,npar2)))
+      Q1=diag(c(rep(2*alpha,npar1),rep(2*delta,npar2),c(2*alpha_c,2*delta_c)))
       d=diag(solve(2*beta*H+Q1))
       gamma1=npar1-2*alpha*sum(d[1:npar1])
       gamma2=npar2-2*delta*sum(d[(npar1+1):(npar1+npar2)])
-    
+      gamma3=1-2*alpha_c*d[npar1+npar2+1]; if(gamma3<0) gamma3=0.1
+      gamma4=1-2*delta_c*d[npar1+npar2+2]; if(gamma4<0) gamma4=0.1
+
       alpha=gamma1/(2*E1)
       delta=gamma2/(2*E2)
+      alpha_c=gamma3/(2*E3)
+      delta_c=gamma4/(2*E4)
       
-      beta=(n-gamma1-gamma2)/(2*Ed)
+      beta=(n-gamma1-gamma2-gamma3-gamma4)/(2*Ed)
       
       if(Ed<0.01)
       {
@@ -663,8 +552,8 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
       }
       if(verbose)
       {
-		cat("gamma_a=",round(gamma1,4),"\tgamma_delta=",round(gamma2,4),"\n")
-		cat("alpha=",round(alpha,4),"\tdelta=",round(delta,4),"\tbeta=",round(beta,4),"\n")
+	cat("gamma_a=",round(gamma1,4),"\tgamma_delta=",round(gamma2,4),"\tgamma_alpha_c=",round(gamma3,4),"\tgamma_delta_c=",round(gamma4,4),"\n")
+	cat("alpha=",round(alpha,4),"\tdelta=",round(delta,4),"alpha_c=",round(alpha_c,4),"delta_c=",round(delta_c,4),"\tbeta=",round(beta,4),"\n")
       }
    }
    if((epoch-1)==epochs) reason="Maximum number of epochs reached";
@@ -673,28 +562,22 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
    
    if(!verbose)
    {
-      cat("gamma_a=",round(gamma1,4),"\tgamma_delta=",round(gamma2,4),"\n")
-      cat("alpha=",round(alpha,4),"\tdelta=",round(delta,4),"\tbeta=",round(beta,4),"\n")
+      cat("gamma_a=",round(gamma1,4),"\tgamma_delta=",round(gamma2,4),"\tgamma_alpha_c=",round(gamma3,4),"\tgamma_delta_c=",round(gamma4,4),"\n")
+      cat("alpha=",round(alpha,4),"\tdelta=",round(delta,4),"alpha_c=",round(alpha_c,4),"delta_c=",round(delta_c,4),"\tbeta=",round(beta,4),"\n")
    }
    
-   out=list(theta1=theta1,theta2=theta2,alpha=alpha,beta=beta,
-               delta=delta,
-               E1=E1,E2=E2,reason=reason,epoch=epoch,F_history=F_history,
-               x_normalized=x_normalized,x_base=x_base,x_spread=x_spread,
-               z_normalized=z_normalized,z_base=x_base,z_spread=z_spread,
-               y_base=y_base,y_spread=y_spread,y=y,
-               neurons1=neurons1, neurons2=neurons2,
-               n=n,p=p,q=q,npar1=npar1,npar2=npar2, 
-               normalize=normalize)
+   out=list(theta1=theta1,theta2=theta2,c_a=w1,c_d=w2,alpha=alpha,beta=beta,
+               delta=delta,alpha_c=alpha_c,delta_c=delta_c,
+               E1=E1,E2=E2,reason=reason,epoch=epoch,F_history=F_history)
                
-   class(out)="brnn_extended";
+   class(out)="brnn.extended";
 
    return(out);
 }
 
-#.First.lib <- function(lib, pkg) {
-#  library.dynam("brnn", pkg, lib)
-#}
+.First.lib <- function(lib, pkg) {
+  library.dynam("brnn", pkg, lib)
+}
 
 ##################################################################################################
 .onAttach <- function(library, pkg)
@@ -704,7 +587,7 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
     stop("This package requires R 2.13.2 or later")
   assign(".brnn.home", file.path(library, pkg),
          pos=match("package:brnn", search()))
-  brnn.version <- "0.3 (2013-03-15)"
+  brnn.version <- "0.1 (2012-07-31)"
   assign(".brnn.version", brnn.version, pos=match("package:brnn", search()))
   if(interactive())
   {

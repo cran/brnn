@@ -1,3 +1,30 @@
+/*  brnn/src/Lanczos.c
+ *
+ *  mgcv_trisymeig and extreme_eigenvalues adapted from the routines
+ *  ggcv_trisymeig and Rlanczos routines in the mgcv R package, Version 1.7-22, http://cran.r-project.org/web/packages/mgcv/index.html
+ *  
+ *  routine Bai implements the Bai's algorithm, 
+ *
+ *  Bai, Z. J., M. Fahey and G. Golub (1996). Some large-scale matrix 
+ *  computation problems. Journal of Computational and Applied Mathematics 74(1-2): 71-89. 
+ *
+ *  Bai's algorithm implemented by Paulino Perez Rodriguez  
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 or 3 of the License
+ *  (at your option).
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  A copy of the GNU General Public License is available at
+ *  http://www.r-project.org/Licenses/
+ */
+
+
 #include "Lanczos.h"
 
 void mgcv_trisymeig(double *d,double *g,double *v,int *n,int getvec,int descending) 
