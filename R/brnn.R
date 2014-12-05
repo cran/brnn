@@ -700,11 +700,11 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
 .onAttach <- function(library, pkg)
 {
   Rv <- R.Version()
-  if(!exists("getRversion", baseenv()) || (getRversion() < "2.13.2"))
-    stop("This package requires R 2.13.2 or later")
+  if(!exists("getRversion", baseenv()) || (getRversion() < "3.1.2"))
+    stop("This package requires R 3.1.2 or later")
   assign(".brnn.home", file.path(library, pkg),
          pos=match("package:brnn", search()))
-  brnn.version <- "0.3 (2013-03-15)"
+  brnn.version <- "0.4 (2014-12-03)"
   assign(".brnn.version", brnn.version, pos=match("package:brnn", search()))
   if(interactive())
   {
