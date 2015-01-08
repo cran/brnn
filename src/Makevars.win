@@ -1,6 +1,6 @@
-SOURCES=$(wildcard win/*.c)
+SOURCES = Lanczos.c util.c win/util_win.c
 
-OBJECTS = Lanczos.o util.o $(SOURCES:.c=.o)
+OBJECTS = Lanczos.o util.o win/util_win.o
 
 PKG_LIBS =  $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 

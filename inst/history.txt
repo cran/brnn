@@ -5,3 +5,5 @@ version 0.2 (2013-03-05):
   Many improvements, 
 version 0.4 (2014-12-03)
   Fixes so that it compiles without problems in new R versions
+version 0.5 (2015-01-07)
+  Makefile changes so that it compiles without problems in new R versions

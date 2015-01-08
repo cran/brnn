@@ -1,6 +1,6 @@
-SOURCES=$(wildcard unix/*.c)
+SOURCES = Lanczos.c util.c unix/util_unix.c
 
-OBJECTS = Lanczos.o util.o $(SOURCES:.c=.o)
+OBJECTS = Lanczos.o util.o unix/util_unix.o
 
 PKG_LIBS =  $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_OPENMP_CFLAGS)
 
