@@ -22,7 +22,7 @@
 #include "util.h"
 #include "Lanczos.h"
 
-#ifdef SUPPORT_OPENMP
+#ifdef _OPENMP
   #include <omp.h>
   //#define CSTACK_DEFNS 7
   //#include "Rinterface.h"
@@ -56,7 +56,7 @@ SEXP predictions_nn(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP yhat, 
    Set the number of threads
    */
    
-   #ifdef SUPPORT_OPENMP     
+   #ifdef _OPENMP     
      //R_CStackLimit=(uintptr_t)-1;
      useCores=INTEGER_VALUE(reqCores);
      haveCores=omp_get_num_procs();
@@ -122,7 +122,7 @@ SEXP jacobian(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP J, SEXP reqC
    Set the number of threads
    */
 
-   #ifdef SUPPORT_OPENMP
+   #ifdef _OPENMP
      //R_CStackLimit=(uintptr_t)-1;
      useCores=INTEGER_VALUE(reqCores);
      haveCores=omp_get_num_procs();
@@ -212,7 +212,7 @@ SEXP estimate_trace(SEXP A, SEXP n, SEXP lambdamin, SEXP lambdamax, SEXP tol, SE
    Set the number of threads
    */
    
-   #ifdef SUPPORT_OPENMP
+   #ifdef _OPENMP
      //R_CStackLimit=(uintptr_t)-1;
      haveCores=omp_get_num_procs();
      if(useCores<=0 || useCores>haveCores) useCores=haveCores;

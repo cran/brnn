@@ -1,5 +1,8 @@
 useDynLib(brnn)
 import(Formula)
+importFrom("stats", ".checkMFClasses", "delete.response",
+             ".getXlevels", "model.frame", "model.matrix",
+             "model.response", "na.omit", "runif", "terms")
 export(brnn,brnn_extended,normalize, un_normalize, initnw, estimate.trace, 
        print.brnn,summary.brnn, predict.brnn, coef.brnn, 
        print.brnn_extended,summary.brnn_extended,predict.brnn_extended,coef.brnn_extended)
