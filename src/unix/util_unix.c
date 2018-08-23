@@ -93,7 +93,7 @@ SEXP predictions_nn(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP yhat, 
 }
 
 //This function will calculate the Jocobian for the errors
-SEXP jacobian(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP J, SEXP reqCores)
+SEXP jacobian_(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP J, SEXP reqCores)
 {
    int i,j,k;
    double z,dtansig;

@@ -1,4 +1,4 @@
-useDynLib(brnn)
+useDynLib(brnn, .registration=TRUE)
 import(Formula)
 importFrom("stats", ".checkMFClasses", "delete.response",
              ".getXlevels", "model.frame", "model.matrix",

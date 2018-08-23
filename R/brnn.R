@@ -98,7 +98,7 @@ jacobian=function(vecX,n,p,npar,theta,neurons,cores=1)
 {
       vectheta=as.vector(unlist(theta))
       vecJ=rep(NA,n*npar)
-      out=.Call("jacobian",as.double(vecX),as.integer(n),as.integer(p),
+      out=.Call("jacobian_",as.double(vecX),as.integer(n),as.integer(p),
                 as.double(vectheta),as.integer(neurons),
                 as.double(vecJ),as.integer(cores))
       J=matrix(out[[1]],nrow=n,ncol=npar)
@@ -704,7 +704,7 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
     stop("This package requires R 3.1.2 or later")
   assign(".brnn.home", file.path(library, pkg),
          pos=match("package:brnn", search()))
-  brnn.version <- "0.5 (2015-01-07)"
+  brnn.version <- "0.7 (2018-08-23)"
   assign(".brnn.version", brnn.version, pos=match("package:brnn", search()))
   if(interactive())
   {

@@ -1,7 +1,7 @@
 18810669f13b87348459e611d31ab760 *COPYING
-5fb29740400573ff467043ada375c1b1 *DESCRIPTION
-0d9e283fbaf8d64ac24ff1b4ad752961 *NAMESPACE
-d773e70bb7189346e9f726006fb37d47 *R/brnn.R
+354a1748bb92d582afff2c59c37f2a98 *DESCRIPTION
+8d59a5c083f3db52b7e7992ab4d785d8 *NAMESPACE
+75f528d331d337303bc88e5ab42f3c98 *R/brnn.R
 2fc71c8e8ff1361b551d007119ccfd84 *R/methods.R
 8a74545cb20056fb7d9d746daaa36af9 *data/Jersey.RData
 2dc8b5e43a05bb72d4688b7064e76ff4 *data/twoinput.RData
@@ -28,9 +28,10 @@ da60e3314b96e2a47084752c5a5b7955 *man/pheno.Rd
 c959e4486ede91311233312bb85eaa9f *man/un_normalize.Rd
 7ae0f9686999c11893a2356e1598e182 *src/Lanczos.c
 9ccf5f2348727844be262f7fedd6443d *src/Lanczos.h
-2f1cb6810e24c840194585882b1ff54e *src/Makevars
-ff2b6b9f94145d13d1cb008f8c5f46d4 *src/Makevars.win
-bc3ae2aefe6a043cd30014d63b5380e3 *src/unix/util_unix.c
+5c88c11cc44990f7a5f0589ed0bb164f *src/Makevars
+8f2003381e600d4f554aacff8e4cdd44 *src/Makevars.win
+1720ce9d00d2bc1b732a9356eb1adb3b *src/init.c
+246d6778618b97d756e6eaa0d40b3bb4 *src/unix/util_unix.c
 faa30a4d71db05a12a39f13cf8210409 *src/util.c
 39c2a64ea068dda6c2449844b091c3a1 *src/util.h
-eaf718760cdbe867e4159b4f77ab83e5 *src/win/util_win.c
+43304e5d0b125c0a38028a464e0d571d *src/win/util_win.c
