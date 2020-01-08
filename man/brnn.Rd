@@ -95,21 +95,21 @@ object of class \code{"brnn"} or \code{"brnn.formula"}. Mostly internal structur
 
 \references{
 
-Bai, Z. J., M. Fahey and G. Golub (1996). "Some large-scale matrix computation problems." 
-\emph{Journal of Computational and Applied Mathematics}  74(1-2): 71-89.
+Bai, Z. J., M. Fahey and G. Golub. 1996. "Some large-scale matrix computation problems." 
+\emph{Journal of Computational and Applied Mathematics}  \bold{74(1-2)}, 71-89.
 
 Foresee, F. D., and M. T. Hagan. 1997. "Gauss-Newton approximation to Bayesian regularization", 
 \emph{Proceedings of the 1997 International Joint Conference on Neural Networks}.
 
-Gianola, D. Okut, H., Weigel, K. and Rosa, G. 2011. "Predicting complex quantitative traits with Bayesian neural networks:
-a case study with Jersey cows and wheat". \emph{BMC Genetics}.
+Gianola, D. Okut, H., Weigel, K. and Rosa, G. 2011. "Predicting complex quantitative traits with Bayesian neural networks: a case study with Jersey cows and wheat". \emph{BMC Genetics}, 
+\bold{12},87.
 
-MacKay, D. J. C. 1992. "Bayesian interpolation", \emph{Neural Computation}, vol. 4, no. 3, pp. 415-447.
+MacKay, D. J. C. 1992. "Bayesian interpolation", \emph{Neural Computation}, 
+\bold{4(3)}, 415-447.
 
-Nguyen, D. and Widrow, B. 1990. "Improving the learning speed of 2-layer neural networks by choosing initial values of the adaptive weights",
-\emph{Proceedings of the IJCNN}, vol. 3, pp. 21-26.
+Nguyen, D. and Widrow, B. 1990. "Improving the learning speed of 2-layer neural networks by choosing initial values of the adaptive weights", \emph{Proceedings of the IJCNN}, \bold{3}, 21-26.
 
-Paciorek, C. J. and Schervish, M. J. (2004). "Nonstationary Covariance Functions for
+Paciorek, C. J. and Schervish, M. J. 2004. "Nonstationary Covariance Functions for
 Gaussian Process Regression". In Thrun, S., Saul, L., and Scholkopf, B., editors, \emph{Advances
 in Neural Information Processing Systems 16}. MIT Press, Cambridge, MA.
 

@@ -11,8 +11,8 @@ tools::package_native_routine_registration_skeleton("/home/pperez/brnn")
 #include <R_ext/Rdynload.h>
 
 /* FIXME: 
- *    Check these declarations against the C/Fortran source code.
- *    */
+   Check these declarations against the C/Fortran source code.
+*/
 
 /* .C calls */
 extern void extreme_eigenvalues(void *, void *, void *, void *, void *, void *, void *);
@@ -20,6 +20,7 @@ extern void extreme_eigenvalues(void *, void *, void *, void *, void *, void *, 
 /* .Call calls */
 extern SEXP estimate_trace(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP jacobian_(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP La_dtrtri_(SEXP, SEXP);
 extern SEXP predictions_nn(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CMethodDef CEntries[] = {
@@ -30,6 +31,7 @@ static const R_CMethodDef CEntries[] = {
 static const R_CallMethodDef CallEntries[] = {
     {"estimate_trace", (DL_FUNC) &estimate_trace, 9},
     {"jacobian_",      (DL_FUNC) &jacobian_,      7},
+    {"La_dtrtri_",     (DL_FUNC) &La_dtrtri_,     2},
     {"predictions_nn", (DL_FUNC) &predictions_nn, 7},
     {NULL, NULL, 0}
 };

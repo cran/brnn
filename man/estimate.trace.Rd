@@ -17,8 +17,8 @@
 }
 
 \references{
-Bai, Z. J., M. Fahey and G. Golub (1996). "Some large-scale matrix computation problems." 
-\emph{Journal of Computational and Applied Mathematics}  74(1-2): 71-89.
+Bai, Z. J., M. Fahey and G. Golub. 1996. "Some large-scale matrix computation problems." 
+\emph{Journal of Computational and Applied Mathematics}, \bold{74(1-2)}, 71-89.
 }
 
 \examples{

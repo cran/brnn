@@ -13,6 +13,8 @@
  *
  *  A copy of the GNU General Public License is available at
  *  http://www.r-project.org/Licenses/
+ 
+ *  Last modified: East Lansing, Michigan, Oct. 2019
  */
 
 #include <R.h>
@@ -181,3 +183,105 @@ SEXP estimate_trace(SEXP A, SEXP n, SEXP lambdamin, SEXP lambdamax, SEXP tol, SE
    
    return(list);
 }
+
+/*
+ Computes the inverse of a triangular matrix obtained by using Cholesky
+ decomposition. 
+ 
+ Let: 
+
+ AA'= B
+ 
+ We want to obtain the trace(B^{-1})
+
+ Algorithm:
+
+ a) Compute A
+ b) Compute A^{-1}, this is because B^{-1}={AA'}^{-1}={A'}^{-1} A^{-1}
+ c) Compute the trace obtaining only the elements of the diagonal of B^{-1} and then take the sum. This saves
+    some computations since we do not need to obtain all elements.
+ */
+
+SEXP La_dtrtri_(SEXP A, SEXP size)
+{
+    int sz = asInteger(size);
+    if (sz == NA_INTEGER || sz < 1) {
+	error("size argument must be a positive integer");
+	return R_NilValue; /* -Wall */
+    } else {
+	SEXP ans, Amat = A; /* -Wall: we initialize here as for the 1x1 case */
+	int m = 1, n = 1, nprot = 0;
+
+	if (sz == 1 && !isMatrix(A) && isReal(A)) {
+	    /* nothing to do; m = n = 1; ... */
+	} else if (isMatrix(A)) {
+	    SEXP adims = getAttrib(A, R_DimSymbol);
+	    if (TYPEOF(adims) != INTSXP) error("non-integer dims");
+	    Amat = PROTECT(coerceVector(A, REALSXP)); nprot++;
+	    m = INTEGER(adims)[0]; n = INTEGER(adims)[1];
+	} else error("a must be a numeric matrix");
+
+	if (sz > n) { UNPROTECT(nprot); error("size cannot exceed ncol(x) = %d", n); }
+	if (sz > m) { UNPROTECT(nprot); error("size cannot exceed nrow(x) = %d", m); }
+	ans = PROTECT(allocMatrix(REALSXP, sz, sz)); nprot++;
+	size_t M = m, SZ = sz;
+	for (int j = 0; j < sz; j++) {
+	    for (int i = 0; i <= j; i++)
+		REAL(ans)[i + j * SZ] = REAL(Amat)[i + j * M];
+	}
+	
+	int info;
+	
+	F77_CALL(dtrtri)("Upper", "Non-unit", &sz, REAL(ans), &sz, &info);
+	
+	
+	if (info != 0) {
+	    UNPROTECT(nprot);
+	    if (info > 0)
+		error("element (%d, %d) is zero, so the inverse cannot be computed",
+		      info, info);
+	    error("argument %d of Lapack routine %s had invalid value",
+		  -info, "dtrtri");
+	}
+	
+	
+	/*
+	The elements in lower triangular are set to 0
+	*/
+	/*
+	for (int j = 0; j < sz; j++)
+	    for (int i = j+1; i < sz; i++)
+		REAL(ans)[i + j * SZ] = 0.0;
+	
+	*/
+	
+	double sum=0;
+	
+	SEXP trace=PROTECT(allocVector(REALSXP,1));
+	
+	for (int j = 0; j < sz; j++) 
+	{
+	    for (int i = 0; i <= j; i++)
+	    {
+	    	sum=sum+REAL(ans)[i + j * SZ]*REAL(ans)[i + j * SZ];
+	    }
+	}
+	
+	REAL(trace)[0]=sum;
+	
+	/*
+	Rprintf("sum=%f\n",sum);
+	*/
+	
+	/*UNPROTECT(nprot);*/
+	
+	UNPROTECT(3);
+	
+	
+	/*return ans;*/
+	
+	return(trace);
+	
+    }
+}
+

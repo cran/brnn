@@ -17,6 +17,7 @@
 #Author: Paulino Perez Rodriguez
 #Madison, WI, Sep. 2012
 #Birmingaham, Alabama, Jan. 2013
+#East Lansing, Michigan, Jan. 2020
 
 #WARNING: This is an experimental version
 
@@ -181,7 +182,7 @@ estimate.trace=function(A,tol=1E-6,samples=40,cores=1)
 
 brnn=function(x,...) UseMethod("brnn")
 brnn_extended=function(x,...) UseMethod("brnn_extended")
-
+brnn_ordinal=function(x,...) UseMethod("brnn_ordinal")
 
 #Pretty simple formula interface for brnn
 #Code adapted from nnet R package
@@ -210,6 +211,37 @@ brnn.formula=function(formula,data,contrasts=NULL,...)
     out$xlevels = .getXlevels(Terms, m)
 
     class(out)=c("brnn.formula","brnn")
+
+    return(out)	
+}
+
+#Pretty simple formula interface for brnn_ordinal
+#Code adapted from nnet R package
+brnn_ordinal.formula=function(formula,data,contrasts=NULL,...)
+{
+    m=match.call(expand.dots = FALSE)
+    if(is.matrix(eval.parent(m$data))) m$data=as.data.frame(data)
+    m$... = m$contrasts = NULL
+    m[[1L]] = as.name("model.frame")
+    m = eval.parent(m)
+    Terms = attr(m, "terms")
+    x =model.matrix(Terms, m, contrasts)
+    cons = attr(x, "contrast")
+    xint = match("(Intercept)", colnames(x), nomatch=0L)
+    if(xint > 0L) x = x[, -xint, drop=FALSE] 
+
+    y = model.response(m)
+	
+    out=brnn_ordinal.default(x,y,...)
+
+    out$terms = Terms
+    out$coefnames = colnames(x)
+    out$call = match.call()
+    #res$na.action = attr(m, "na.action")
+    out$contrasts = cons
+    out$xlevels = .getXlevels(Terms, m)
+
+    class(out)=c("brnn_ordinal.formula","brnn_ordinal")
 
     return(out)	
 }
@@ -296,18 +328,18 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
         x_spread=apply(x,2,max)-x_base 
         x_normalized=normalize(x,base=x_base,spread=x_spread)
    		
-   		y_base=min(y)
-   		y_spread=max(y) - y_base
-   		y_normalized=normalize(y,base=y_base,spread=y_spread)
+   	y_base=min(y)
+   	y_spread=max(y) - y_base
+   	y_normalized=normalize(y,base=y_base,spread=y_spread)
    		
    }else{
-   		y_normalized=y
-   		y_base=NULL
-   		y_spread=NULL
+   	y_normalized=y
+   	y_base=NULL
+   	y_spread=NULL
    		
-   		x_normalized=x
-   		x_base=NULL
-   		x_spread=NULL
+   	x_normalized=x
+   	x_base=NULL
+   	x_spread=NULL
    }
    
    vecx=as.vector(x_normalized)
@@ -358,8 +390,8 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
       
       e=y_normalized-predictions.nn.C(vecx,n,p,theta,neurons,cores)
 
-      #g=2*beta*t(J)%*%e+2*alpha*unlist(theta)
-      g=2*as.vector((beta*t(e)%*%J+alpha*unlist(theta)))  #is it faster?
+      g=2*beta*crossprod(J,e)+2*alpha*unlist(theta)
+      #g=2*as.vector((beta*t(e)%*%J+alpha*unlist(theta)))  #is it faster?
       mg=max(abs(g))
       flag_gradient=mg>min_grad
       Ed=sum(e^2)
@@ -385,7 +417,10 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
       flag_mu=mu<=mu_max
       while(flag_C & flag_mu)
       {
-	  	tmp=as.vector(unlist(theta)-solve(2*beta*H+ii(2*alpha+mu,npar),g))
+	  	#tmp=as.vector(unlist(theta)-solve(2*beta*H+ii(2*alpha+mu,npar),g))
+		U = chol(2*beta*H+ii(2*alpha+mu,npar)) 
+		tmp = as.vector(unlist(theta)-backsolve(U, backsolve(U, g, transpose = TRUE)))
+
 	  	theta_new=list()
 	  	for(i in 1:neurons)
 	  	{
@@ -413,7 +448,7 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
 	  	{
 	    		cat("mu=",mu,"\n")
 	  	}
-          flag_mu=mu<=mu_max
+          	flag_mu=mu<=mu_max
       }
       #Update all
       theta=theta_new
@@ -421,7 +456,9 @@ brnn.default=function(x,y,neurons=2,normalize=TRUE,epochs=1000,mu=0.005,mu_dec=0
       if(Monte_Carlo){
           gamma=npar-2*alpha*estimate.trace(2*beta*H+ii(2*alpha,npar),tol=tol,samples=samples,cores=cores) 
       }else{
-          gamma=npar-2*alpha*sum(diag(solve(2*beta*H+ii(2*alpha,npar))))
+          #gamma=npar-2*alpha*sum(diag(solve(2*beta*H+ii(2*alpha,npar))))
+          st=.Call("La_dtrtri_",chol(2*beta*H+ii(2*alpha,npar)),npar)
+          gamma=npar-2*alpha*st
       }
       alpha=gamma/(2*Ew)
       beta=(n-gamma)/(2*Ed)
@@ -692,9 +729,314 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
    return(out);
 }
 
-#.First.lib <- function(lib, pkg) {
-#  library.dynam("brnn", pkg, lib)
-#}
+##########################################################################################
+#Auxiliary functions for ordinal regression with neural networks
+
+#Using the rtruncnorm function in the truncnorm package
+rtrun=function(mu,sigma,a,b)
+{
+    n=max(c(length(mu),length(sigma),length(a),length(b)))
+    rtruncnorm(n,a,b,mu,sigma)
+}
+
+#Extract the values of z such that y[i]=j
+#z,y vectors, j integer
+#extract=function(z,y,j) subset(as.data.frame(z,y),subset=(y==j))
+extract=function(z,y,j) z[y==j]
+
+predict_probability=function(threshold,predictor)
+{
+
+	threshold=threshold[is.finite(threshold)]
+	cum_prob=matrix(NA,nrow=length(predictor),ncol=length(threshold))
+	prob=matrix(NA,nrow=length(predictor),ncol=length(threshold)+1)
+	
+	#Cumulative probabilities
+	for(j in 1:length(threshold))
+	{
+		cum_prob[,j]=pnorm(threshold[j]-predictor)
+	}
+	
+	#P(Y_i=j)
+	prob[,1]=cum_prob[,1]
+	for(j in 2:length(threshold))
+	{
+		prob[,j]=cum_prob[,j]-cum_prob[,j-1]
+	}
+	prob[,length(threshold)+1]=1-cum_prob[,length(threshold)]
+	
+	return(prob)
+}
+
+brnn_ordinal.default=function(x,y,
+                      	      neurons=2,
+                              normalize=TRUE, 
+                              epochs=1000,
+                              mu=0.005,
+                              mu_dec=0.1,
+                              mu_inc=10,
+                              mu_max=1e10,
+                              min_grad=1e-10,
+                              change_F=0.01,
+                              change_par=0.01,
+                              iter_EM=1000,
+                              verbose=FALSE,
+                              ...)
+{
+
+	#Checking that the imputs are ok
+   	if(!is.vector(y)) stop("y must be a vector\n")
+   	if(!is.matrix(x)) stop("x must be a matrix\n")
+   	
+   	if(normalize)
+    {
+        x_base=apply(x,2,min)
+        x_spread=apply(x,2,max)-x_base 
+        x_normalized=normalize(x,base=x_base,spread=x_spread)
+   	}else{	
+   		x_normalized=x
+   		x_base=NULL
+   		x_spread=NULL
+   	}
+   
+   	vecx=as.vector(x_normalized)
+   
+   	#Initializing parameters for the net
+   	p=ncol(x_normalized)
+   	n=length(y)
+	countsY=table(y)
+	nclass=length(countsY)
+
+	threshold=c(-Inf,qnorm(p=cumsum(countsY[-nclass]/n)),Inf)
+
+	#Initial value of latent variable
+	yStar = rtrun(mu =0, sigma = 1, a = threshold[y], b = threshold[ (y + 1)])
+   
+	#neurons is the number of neurons
+	#the first 1 corresponds to the weight for the tansig function, i.e. weight*tansig(.)
+	#the second 1 corresponds to the bias in tansig(.) function, .= bias + xi[1]*beta[1]+...+xi[p]*beta[p]
+	#p corresponds to the number of covariates
+	npar=neurons*(1+1+p)
+	cat("Number of parameters (weights and biases) to estimate:",npar,"\n")
+
+	theta=initnw(neurons,p,n,npar)
+	gamma=npar
+	Ew=Ew(theta)
+	alpha=gamma/(2*Ew)
+	
+	mu.orig=mu
+	
+	#theta, thresholds, alpha
+	parameters=matrix(NA,nrow=iter_EM,ncol=npar+(nclass-1)+1)
+	differences=rep(NA,iter_EM)
+
+	iter=0
+	flag_change_par=TRUE
+	
+	while(iter<iter_EM & flag_change_par)
+	{ 
+		iter=iter+1
+		
+		start=proc.time()[3]	
+
+		cat("**********************************************************************\n")
+		cat("iter=",iter,"\n")
+   
+		reason="UNKNOWN"
+		epoch=0
+		flag_gradient=TRUE
+		flag_mu=TRUE
+		flag_change_F=TRUE
+		flag_change_Ed=TRUE
+		F_history=rep(NA,epochs)
+
+		C_new=0
+
+	    	mu=mu.orig
+
+		while(epoch<=epochs & flag_mu & flag_change_Ed & flag_change_F)
+		{
+			  epoch=epoch+1
+			  
+			  if(verbose)
+			  {
+				cat("----------------------------------------------------------------------\n")
+				cat("Epoch=",epoch,"\n")		  
+			  }
+
+			  
+              		  J=jacobian(vecx,n,p,npar,theta,neurons)
+              
+			  H=crossprod(J)
+                            
+			  e=yStar-predictions.nn.C(vecx,n,p,theta,neurons)
+
+			  g=as.vector((crossprod(J,e)+2*alpha*unlist(theta)))
+			  mg=max(abs(g))
+			  flag_gradient=mg>min_grad
+			  Ed=sum(e^2)
+			  Ew=Ew(theta)
+			  C=Ed/2.0+alpha*Ew
+			  
+			  if(verbose)
+			  {
+				cat("C=",C,"\tEd=",Ed,"\tEw=",Ew,"\n")
+				cat("gradient=",mg,"\n")
+			  }
+	   
+			  F_history[epoch]=C_new
+
+			  if(epoch>3)
+			  {
+				  if(max(abs(diff(F_history[(epoch-3):epoch])))<change_F) 
+				  {
+					  flag_change_F=FALSE;
+					  reason=paste("Changes in F= SCE/2 + alpha*Ew in last 3 iterations less than",change_F,sep=" ");
+				  }
+			  }
+			  
+			  flag_C=TRUE
+			  flag_mu=mu<=mu_max
+
+			  while(flag_C & flag_mu)
+			  {
+				
+				U = chol(H+ii(2*alpha+mu,npar)) 
+			  	tmp=as.vector(unlist(theta)-backsolve(U, backsolve(U, g, transpose = TRUE)))
+		
+			  	theta_new=list()
+	  			for(i in 1:neurons)
+	  			{
+	      			theta_new[[i]]=tmp[1:(2+p)]
+	      			tmp=tmp[-c(1:(2+p))]
+	  			}
+			  		
+				e_new=yStar-predictions.nn.C(vecx,n,p,theta_new,neurons)
+				Ed=sum(e_new^2)
+				Ew=Ew(theta_new)
+				C_new=Ed/2.0+alpha*Ew
+				
+				if(verbose) 
+				{
+						cat("C_new=",C_new,"\tEd=",Ed,"\tEw=",Ew,"\n")
+				}
+				
+				if(C_new<C)
+				{
+						mu=mu*mu_dec
+						if (mu < 1e-20) mu = 1e-20;
+						flag_C=FALSE
+				}else{
+						mu=mu*mu_inc
+				}
+				
+				if(verbose)
+				{
+						cat("mu=",mu,"\n")
+				}
+				
+				flag_mu=mu<=mu_max
+			  }
+
+			  
+			  #Update all
+			  theta=theta_new
+
+			  st=.Call("La_dtrtri_",chol(H+ii(2*alpha,npar)),npar)
+
+			  gamma=npar-2*alpha*st
+			 
+			  alpha=gamma/(2*Ew)
+
+			  if(Ed<change_F)
+			  {
+				 flag_change_Ed=FALSE
+				 reason=paste("SCE <=",change_F,sep="");
+			  }
+			  
+			  if(verbose)
+			  {
+				cat("gamma=",round(gamma,4),"\t","alpha=",round(alpha,4),"\n")
+			  }
+		}
+		
+		if(epoch==epochs) reason="Maximum number of epochs reached"
+		if(!flag_mu) reason="Maximum mu reached"
+		if(!flag_gradient) reason="Minimum gradient reached" 
+		if(!verbose)
+		{
+			 cat("gamma=",round(gamma,4),"\t","alpha=",round(alpha,4),"\n")
+		}
+		
+		if(iter<=iter_EM)
+		{
+
+			#Update y
+			yHat=predictions.nn.C(vecx,n,p,theta,neurons)
+			
+			
+			#The mean of the truncated normal distribution, this code replace the 
+			#following line yStar=rtrun(mu = yHat, sigma = 1, a = threshold[y], b = threshold[(y + 1)])
+			yStar=etruncnorm(a=threshold[y],b=threshold[(y + 1)],mean=yHat,sd=1)
+
+			#Update the thresholds, one of the thresholds is set to zero, to ensure that
+			#parameters are identifiable (Albert & Chib, 1993, pag. 673). Without this
+			#constraint EM is not converging
+			threshold[2]=0
+			for (m in 3:nclass) 
+			{
+				lo = max(max(extract(yStar, y, m - 1)), threshold[m - 1])
+				hi = min(min(extract(yStar, y, m)), threshold[m + 1])
+				
+				#The mean of the random variable
+				#This code replaces threshold[m] = runif(1, lo, hi)
+				threshold[m]=(lo+hi)/2
+			}
+			
+			
+			parameters[iter,]=c(unlist(theta),threshold[2:nclass],alpha)
+			
+			if(iter>=2)
+			{
+				differences[iter]=max(abs(parameters[iter,]-parameters[iter-1,]))
+				if(differences[iter]<change_par) 
+				{
+					flag_change_par=FALSE
+					differences=differences[1:iter]
+					parameters=parameters[1:iter,]
+				}
+			}	
+		}
+
+		end=proc.time()[3]
+		cat("Total elapsed=",round(end-start,3),"\n")
+
+	}
+	
+	if(!flag_change_par)
+	{
+		cat("Difference between the entries of vector of parameters less than ", change_par,"\n")
+	}else{
+		cat("Maximum number of iteration for EM reached\n")
+	}
+		
+	out=list(theta=theta,
+	         threshold=threshold,
+	         alpha=alpha,
+	         gamma=gamma,
+	         n=n,
+	         p=p,
+	         neurons=neurons,
+	         differences=differences,
+		     x_normalized=x_normalized,
+             x_base=x_base,x_spread=x_spread,
+             normalize=normalize)
+    
+    class(out)="brnn_ordinal"
+    
+    #return the goodies
+    return(out)
+}
 
 ##################################################################################################
 .onAttach <- function(library, pkg)
@@ -704,7 +1046,7 @@ brnn_extended.default=function(x,y,z,neurons1,neurons2,normalize=TRUE,epochs=100
     stop("This package requires R 3.1.2 or later")
   assign(".brnn.home", file.path(library, pkg),
          pos=match("package:brnn", search()))
-  brnn.version <- "0.7 (2018-08-23)"
+  brnn.version <- "0.8 (2019-10-17)"
   assign(".brnn.version", brnn.version, pos=match("package:brnn", search()))
   if(interactive())
   {

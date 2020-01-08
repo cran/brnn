@@ -23,8 +23,7 @@ where
 }
 
 \references{
-Gianola, D. Okut, H., Weigel, K. and Rosa, G. 2011. 
-"Predicting complet quantitative traits with Bayesian neural networks:
-a case study with Jersey cows and wheat". \emph{BMC Genetics}.
+Gianola, D. Okut, H., Weigel, K. and Rosa, G. 2011. "Predicting complex quantitative traits with Bayesian neural networks: a case study with Jersey cows and wheat". \emph{BMC Genetics}, 
+\bold{12},87.
 }
 \keyword{datasets}

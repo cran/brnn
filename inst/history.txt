@@ -9,3 +9,7 @@ version 0.5 (2015-01-07)
   Makefile changes so that it compiles without problems in new R versions
 version 0.6 (2016-01-26)
   Very small fixes in C source code, replace SUPPORT_OPENMP with _OPENMP
+version 0.7 (2018-08-23)
+   Native routine registration   
+version 0.8 (2020-01-04)
+  Added support for ordinal responses

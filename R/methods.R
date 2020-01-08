@@ -17,6 +17,7 @@
 #Author: Paulino Perez Rodriguez
 #Madison, WI, Sep. 2012
 #Birmingaham, Alabama, Jan. 2013
+#East Lansing, Michigan, Jan. 2020
 
 print.brnn=function(x,...)
 {
@@ -36,7 +37,7 @@ predict.brnn=function(object,newdata,...)
 {
    y=NULL;
 
-   if(!inherits(object,"brnn")) stop("This function only works for objects of class `brnn \n'");
+   if(!inherits(object,"brnn")) stop("This function only works for objects of class `brnn'\n");
    
    if (missing(newdata) || is.null(newdata)) 
    {
@@ -57,18 +58,20 @@ predict.brnn=function(object,newdata,...)
 		 ## The model was fitted using formula interface
 		 newdata = as.data.frame(newdata)
 
-            	 ## Obtain the design matrix for the prediction problem
-            	 Terms = delete.response(object$terms)
-            	 mf=model.frame(Terms, newdata, na.action = na.omit, xlev = object$xlevels)
-            	 if (!is.null(cl <- attr(Terms, "dataClasses"))) .checkMFClasses(cl, mf)
-            	 x = model.matrix(Terms, mf, contrasts = object$contrasts)
-            	 xint = match("(Intercept)", colnames(x), nomatch=0L)
-            	 if(xint > 0L) x = x[, -xint, drop=FALSE] 
+        ## Obtain the design matrix for the prediction problem
+        Terms = delete.response(object$terms)
+        mf=model.frame(Terms, newdata, na.action = na.omit, xlev = object$xlevels)
+        if (!is.null(cl <- attr(Terms, "dataClasses"))) .checkMFClasses(cl, mf)
+        x = model.matrix(Terms, mf, contrasts = object$contrasts)
+        xint = match("(Intercept)", colnames(x), nomatch=0L)
+        if(xint > 0L) x = x[, -xint, drop=FALSE]
+        
 	}else{
+	
 		# Matrix fit
 		if(is.null(dim(newdata))) dim(newdata) = c(1L, length(newdata)) # a row vector
-        	x = as.matrix(newdata)     # to cope with dataframes
-        	if(any(is.na(x))) stop("missing values not allowed in 'newdata' \n")
+        x = as.matrix(newdata)     # to cope with dataframes
+        if(any(is.na(x))) stop("missing values not allowed in 'newdata' \n")
 	}
         
 	if(ncol(x)!=object$p) stop("The number of predictors used to fit the model and those in `newdata' does not match\n");
@@ -173,7 +176,7 @@ predict.brnn_extended=function(object, newdata,...)
 
 print.brnn_extended=function(x,...)
 {
-	if (!inherits(x, "brnn_extended")) stop("This function only works for objects of class `brnn_extended \n'");
+	if (!inherits(x, "brnn_extended")) stop("This function only works for objects of class `brnn_extended'\n");
   	cat("A Bayesian regularized neural network \n");
   	cat(paste(x$p,"-",x$neurons1,"-",x$neurons2,"- 1 with",x$npar1+x$npar2, "weights, biases and connection strengths\n",sep=" "));
   	cat("Inputs and output were", ifelse(x$normalize,"","NOT"),"normalized\n",sep=" ");
@@ -211,4 +214,95 @@ coef.brnn_extended=function(object,...)
         out[[1]]=theta1
         out[[2]]=theta2
         out
+}
+
+#
+print.brnn_ordinal=function(x,...)
+{
+  	if(!inherits(x, "brnn_ordinal")) stop("This function only works for objects of class `brnn_ordinal'\n")
+  	cat("A Bayesian regularized neural network for ordinal responses\n")
+  	cat(paste(x$p,"-",x$neurons,"- 1 with",x$npar, "weights, biases and connection strengths\n",sep=" "))
+  	cat(paste("and", length(x$threshold)-1,"thresholds\n",sep=" "))
+  	cat("Inputs were", ifelse(x$normalize,"","NOT"),"normalized\n",sep=" ")
+  	#cat("Training finished because ",x$reason,"\n");
+}
+
+summary.brnn_ordinal=function(object,...)
+{
+	object
+}
+
+
+#Predict class and probabilities
+predict.brnn_ordinal=function(object,newdata,...)
+{
+   out=list()
+   out$class=NULL
+   out$probability=NULL
+
+   if(!inherits(object,"brnn_ordinal")) stop("This function only works for objects of class `brnn_ordinal \n'");
+   
+   if (missing(newdata) || is.null(newdata)) 
+   {
+        
+        y=predictions.nn.C(vecX=as.vector(object$x_normalized),n=object$n,p=object$p,
+                           theta=object$theta,neurons=object$neurons,cores=1)
+        out$probability=predict_probability(object$threshold,y)
+		out$class=as.integer(cut(y,object$threshold))
+                           
+   }else{
+   
+   		if(inherits(object,"brnn_ordinal.formula"))
+		{
+		 	## The model was fitted using formula interface
+		 	newdata = as.data.frame(newdata)
+			
+			## Obtain the design matrix for the prediction problem
+            Terms = delete.response(object$terms)
+            mf=model.frame(Terms, newdata, na.action = na.omit, xlev = object$xlevels)
+            if (!is.null(cl <- attr(Terms, "dataClasses"))) .checkMFClasses(cl, mf)
+            x = model.matrix(Terms, mf, contrasts = object$contrasts)
+            xint = match("(Intercept)", colnames(x), nomatch=0L)
+            if(xint > 0L) x = x[, -xint, drop=FALSE] 
+		}else{
+			# Matrix fit
+			if(is.null(dim(newdata))) dim(newdata) = c(1L, length(newdata)) # a row vector
+        	x = as.matrix(newdata)     # to cope with dataframes
+        	if(any(is.na(x))) stop("missing values not allowed in 'newdata' \n")
+        	
+	}
+	        
+    if(ncol(x)!=object$p) stop("The number of predictors used to fit the model and those in `newdata' does not match\n");
+        
+	#normalize using the information in the trainig set
+    if(object$normalize)
+    {
+		x=normalize(x,base=object$x_base,spread=object$x_spread)
+    }
+        
+    y=predictions.nn.C(vecX=as.vector(x),n=nrow(x),p=ncol(x),
+                       theta=object$theta,neurons=object$neurons,cores=1)
+    out$probability=predict_probability(object$threshold,y)
+	out$class=as.integer(cut(y,object$threshold))
+   
+   }
+   
+   return(out)
+}
+
+coef.brnn_ordinal=function(object, ...)
+{
+    if(!inherits(object, "brnn_ordinal")) stop("This function only works for objects of class `brnn_ordinal'\n");
+    theta=object$theta
+    theta_names=as.character()        
+
+    #Loop for getting weights, biases and connection strengths for each neuron
+    for(i in 1:(object$neurons))
+    {
+        theta_names=c(theta_names,paste("w[",i,"]",sep=""),paste("b[",i,"]",sep=""),paste(paste("beta[",i,",",sep=""),1:object$p,"]",sep=""))
+    }
+
+    theta=as.vector(unlist(theta))
+    names(theta)=theta_names
+    theta
 }

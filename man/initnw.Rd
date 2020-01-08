@@ -38,7 +38,7 @@
 
 \references{
 Nguyen, D. and Widrow, B. 1990. "Improving the learning speed of 2-layer neural networks by choosing initial values of the adaptive weights",
-\emph{Proceedings of the IJCNN}, vol. 3, pp. 21-26.
+\emph{Proceedings of the IJCNN}, \bold{3}, 21-26.
 
 Sivanandam, S.N. and Sumathi, S. 2005. Introduction to Neural Networks Using MATLAB 6.0. Ed. McGraw Hill, First edition. 
 

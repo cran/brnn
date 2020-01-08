@@ -98,10 +98,10 @@ object of class \code{"brnn_extended"} or \code{"brnn_extended.formula"}. Mostly
 Foresee, F. D., and M. T. Hagan. 1997. "Gauss-Newton approximation to Bayesian regularization", 
 \emph{Proceedings of the 1997 International Joint Conference on Neural Networks}.
 
-MacKay, D. J. C. 1992. "Bayesian interpolation", \emph{Neural Computation}, vol. 4, no. 3, pp. 415-447.
+MacKay, D. J. C. 1992. "Bayesian interpolation", \emph{Neural Computation}, \bold{4(3)}, 415-447.
 
 Nguyen, D. and Widrow, B. 1990. "Improving the learning speed of 2-layer neural networks by choosing initial values of the adaptive weights",
-\emph{Proceedings of the IJCNN}, vol. 3, pp. 21-26.
+\emph{Proceedings of the IJCNN}, \bold{3}, 21-26.
 
 }
 
