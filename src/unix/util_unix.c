@@ -16,8 +16,13 @@
  
  *  Last modified: East Lansing, Michigan, Oct. 2019
  */
- 
 
+
+#ifdef _OPENMP
+  #include <omp.h>
+  //#define CSTACK_DEFNS 7
+  //#include "Rinterface.h"
+#endif
 
 #include <R.h>
 #include <Rinternals.h>
@@ -25,11 +30,6 @@
 #include "util.h"
 #include "Lanczos.h"
 
-#ifdef _OPENMP
-  #include <omp.h>
-  //#define CSTACK_DEFNS 7
-  //#include "Rinterface.h"
-#endif
 
 SEXP predictions_nn(SEXP X, SEXP n, SEXP p, SEXP theta, SEXP neurons,SEXP yhat, SEXP reqCores)
 {

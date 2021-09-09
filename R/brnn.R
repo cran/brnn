@@ -1042,11 +1042,11 @@ brnn_ordinal.default=function(x,y,
 .onAttach <- function(library, pkg)
 {
   Rv <- R.Version()
-  if(!exists("getRversion", baseenv()) || (getRversion() < "3.1.2"))
-    stop("This package requires R 3.1.2 or later")
+  if(!exists("getRversion", baseenv()) || (getRversion() < "3.5.0"))
+    stop("This package requires R 3.5.0 or later")
   assign(".brnn.home", file.path(library, pkg),
          pos=match("package:brnn", search()))
-  brnn.version <- "0.8 (2019-10-17)"
+  brnn.version <- "0.9 (2021-09-09)"
   assign(".brnn.version", brnn.version, pos=match("package:brnn", search()))
   if(interactive())
   {
