@@ -1,5 +1,5 @@
 18810669f13b87348459e611d31ab760 *COPYING
-14df89a135926ac3aebc2f9a0ad11ab1 *DESCRIPTION
+1f6e3f210aed6b304077b357382bf8e3 *DESCRIPTION
 725d7b67bd206394aa31511166b21ab0 *NAMESPACE
 c721245ede4cc574df074e6c153d9be9 *R/brnn.R
 d9d79edb8e2180ee623f229b88297849 *R/methods.R
@@ -13,7 +13,7 @@ e9eda4031e040bccbf36ce79e690db84 *demo/00Index
 0667e495c39a19cdf2ba72ec1338ae64 *demo/Example_4.R
 80f99cd02a307035b266a424a92347a9 *demo/Example_5.R
 b934d8fd67b6097c0f1484b2aa7c9ca0 *demo/Example_6.R
-a53baad2450061bde33b77274be3b232 *inst/history.txt
+6bc34453407c059745105c12cb3fa81d *inst/history.txt
 4c1db649d59ef4eb9f3716c9e1926812 *man/D.Rd
 f662932b41fe94d7b65b30f306bf363b *man/G.Rd
 ab250265a839f8907d09856e5c131b22 *man/GOrd.Rd
@@ -32,12 +32,12 @@ a4965765b4da6743a0470aa647832339 *man/phenoOrd.Rd
 39f7f94437b573a498416b5829543a03 *man/predictions.brnn_ordinal.Rd
 73d3d067baad9cfcb0a9b8f21645cd0f *man/twoinput.Rd
 c959e4486ede91311233312bb85eaa9f *man/un_normalize.Rd
-7ae0f9686999c11893a2356e1598e182 *src/Lanczos.c
-9ccf5f2348727844be262f7fedd6443d *src/Lanczos.h
+85e58d84d49e807198106f5af1beb882 *src/Lanczos.c
+8f8e0e311271ad7b53ffebc30a893f95 *src/Lanczos.h
 5c88c11cc44990f7a5f0589ed0bb164f *src/Makevars
 8f2003381e600d4f554aacff8e4cdd44 *src/Makevars.win
 4b43d374ddbb08c438c666363444c36b *src/init.c
-fd1984a676565a708bc89f0e537865e2 *src/unix/util_unix.c
+9a4d636618351d75987dc379460b1380 *src/unix/util_unix.c
 faa30a4d71db05a12a39f13cf8210409 *src/util.c
 39c2a64ea068dda6c2449844b091c3a1 *src/util.h
 cf1187a448f5651a6ce05707c85d99e8 *src/win/util_win.c

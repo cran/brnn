@@ -16,3 +16,7 @@ version 0.8 (2020-01-04)
 version 0.9 (2021-09-09)
   Very small fixed in C source code to fix compilation problems with clang13.0.0. The inclusion of openmp headers
   causes a compilation error if included after Rinternal.h"
+version 0.9.1 (2022-04-24)
+  Fixes to call correctly BLAS/LAPACK routines. USE_FC_LEN_T will become the default: this uses the correct
+  prototypes for Fortran BLAS/LAPACK routines called from C/C++, and requires adjustment of most such 
+  calls - see "Writing R Extensions" 6.6.2.  (This has been supported since R 3.6.2.)

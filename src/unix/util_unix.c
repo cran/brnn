@@ -289,8 +289,10 @@ SEXP La_dtrtri_(SEXP A, SEXP size)
 	}
 	
 	int info;
+	char uplo='U';
+	char diag='N';
 	
-	F77_CALL(dtrtri)("Upper", "Non-unit", &sz, REAL(ans), &sz, &info);
+	F77_CALL(dtrtri)(&uplo, &diag, &sz, REAL(ans), &sz, &info FCONE FCONE);
 	
 	
 	if (info != 0) {
