@@ -1046,7 +1046,7 @@ brnn_ordinal.default=function(x,y,
     stop("This package requires R 3.5.0 or later")
   assign(".brnn.home", file.path(library, pkg),
          pos=match("package:brnn", search()))
-  brnn.version <- "0.9 (2021-09-09)"
+  brnn.version <- "0.9.2 (2022-05-16)"
   assign(".brnn.version", brnn.version, pos=match("package:brnn", search()))
   if(interactive())
   {

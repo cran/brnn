@@ -1,7 +1,7 @@
 18810669f13b87348459e611d31ab760 *COPYING
-1f6e3f210aed6b304077b357382bf8e3 *DESCRIPTION
+35fc9013fb6202e0ea72c886b4d58382 *DESCRIPTION
 725d7b67bd206394aa31511166b21ab0 *NAMESPACE
-c721245ede4cc574df074e6c153d9be9 *R/brnn.R
+bd5ed47bbac08188550113f7fa6c1bb2 *R/brnn.R
 d9d79edb8e2180ee623f229b88297849 *R/methods.R
 3d68dbccb837a2f8e98498e72572f3e8 *data/GLS.RData
 8a74545cb20056fb7d9d746daaa36af9 *data/Jersey.RData
@@ -13,7 +13,7 @@ e9eda4031e040bccbf36ce79e690db84 *demo/00Index
 0667e495c39a19cdf2ba72ec1338ae64 *demo/Example_4.R
 80f99cd02a307035b266a424a92347a9 *demo/Example_5.R
 b934d8fd67b6097c0f1484b2aa7c9ca0 *demo/Example_6.R
-6bc34453407c059745105c12cb3fa81d *inst/history.txt
+d05c6aa5f67669ef192fc21b6bb2c5c7 *inst/history.txt
 4c1db649d59ef4eb9f3716c9e1926812 *man/D.Rd
 f662932b41fe94d7b65b30f306bf363b *man/G.Rd
 ab250265a839f8907d09856e5c131b22 *man/GOrd.Rd
@@ -40,4 +40,4 @@ c959e4486ede91311233312bb85eaa9f *man/un_normalize.Rd
 9a4d636618351d75987dc379460b1380 *src/unix/util_unix.c
 faa30a4d71db05a12a39f13cf8210409 *src/util.c
 39c2a64ea068dda6c2449844b091c3a1 *src/util.h
-cf1187a448f5651a6ce05707c85d99e8 *src/win/util_win.c
+9499a045ed52511f96de9be1cacfbd5f *src/win/util_win.c
