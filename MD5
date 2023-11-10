@@ -1,8 +1,8 @@
 18810669f13b87348459e611d31ab760 *COPYING
-35fc9013fb6202e0ea72c886b4d58382 *DESCRIPTION
+9be20f40e71a08db57314457f26fe17a *DESCRIPTION
 725d7b67bd206394aa31511166b21ab0 *NAMESPACE
-bd5ed47bbac08188550113f7fa6c1bb2 *R/brnn.R
-d9d79edb8e2180ee623f229b88297849 *R/methods.R
+dc20e1c57455ad3589a012110645c488 *R/brnn.R
+24363cc5038433b4ee068969a03459df *R/methods.R
 3d68dbccb837a2f8e98498e72572f3e8 *data/GLS.RData
 8a74545cb20056fb7d9d746daaa36af9 *data/Jersey.RData
 2dc8b5e43a05bb72d4688b7064e76ff4 *data/twoinput.RData
@@ -13,7 +13,7 @@ e9eda4031e040bccbf36ce79e690db84 *demo/00Index
 0667e495c39a19cdf2ba72ec1338ae64 *demo/Example_4.R
 80f99cd02a307035b266a424a92347a9 *demo/Example_5.R
 b934d8fd67b6097c0f1484b2aa7c9ca0 *demo/Example_6.R
-d05c6aa5f67669ef192fc21b6bb2c5c7 *inst/history.txt
+279f73593c869dddcdaba172bb29128b *inst/history.txt
 4c1db649d59ef4eb9f3716c9e1926812 *man/D.Rd
 f662932b41fe94d7b65b30f306bf363b *man/G.Rd
 ab250265a839f8907d09856e5c131b22 *man/GOrd.Rd
@@ -23,7 +23,7 @@ ab250265a839f8907d09856e5c131b22 *man/GOrd.Rd
 f4f0d8060c7fdda51dd749eea612ebda *man/estimate.trace.Rd
 b3af5b7bcde0c638a6e1dc5183265c46 *man/initnw.Rd
 97827aee470842e85a275907f13d6b7e *man/jacobian.Rd
-6b835e927ea72d1c73ca9ae6c9d1a0d9 *man/normalize.Rd
+ec672e441fca6157e0681c7375493c80 *man/normalize.Rd
 3318a4e78024daee8bc114d393945824 *man/partitions.Rd
 d8bdd77af90346b21f198f5953a0d788 *man/pheno.Rd
 a4965765b4da6743a0470aa647832339 *man/phenoOrd.Rd
