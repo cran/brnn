@@ -1,5 +1,5 @@
 18810669f13b87348459e611d31ab760 *COPYING
-9be20f40e71a08db57314457f26fe17a *DESCRIPTION
+9e11beadea530f941e8610e01bfe0ecf *DESCRIPTION
 725d7b67bd206394aa31511166b21ab0 *NAMESPACE
 dc20e1c57455ad3589a012110645c488 *R/brnn.R
 24363cc5038433b4ee068969a03459df *R/methods.R
@@ -19,8 +19,8 @@ f662932b41fe94d7b65b30f306bf363b *man/G.Rd
 ab250265a839f8907d09856e5c131b22 *man/GOrd.Rd
 3353bffd6841d681741d08783ee9064f *man/brnn.Rd
 233bace8ba5f38baa184beea3677e0a3 *man/brnn_extended.Rd
-83b2561cb629a9a742129d2dda42b0fd *man/brnn_ordinal.Rd
-f4f0d8060c7fdda51dd749eea612ebda *man/estimate.trace.Rd
+7eb4d685c4d1127329bca7470dce4d8a *man/brnn_ordinal.Rd
+f5b6e07baf4e9772401b17286be7cddc *man/estimate.trace.Rd
 b3af5b7bcde0c638a6e1dc5183265c46 *man/initnw.Rd
 97827aee470842e85a275907f13d6b7e *man/jacobian.Rd
 ec672e441fca6157e0681c7375493c80 *man/normalize.Rd
